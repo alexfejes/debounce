@@ -26,30 +26,13 @@ function App() {
    *
    * useDebounce only lets `query` through once the user stops typing for
    * 500ms, so typing "react" sends 1 request instead of 5.
-   *
-   * The AbortController handles the requests that still get sent (e.g. the
-   * user pauses mid-word). When `debouncedQuery` changes, React runs the
-   * cleanup, which aborts the previous in-flight request. It shows up as
-   * "(canceled)" in the Network tab, and only the newest request can call
-   * setResults, so stale results can't win the race.
 
   const debouncedQuery = useDebounce(query, 500)
 
   useEffect(() => {
-    const controller = new AbortController()
-
-    fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`, {
-      signal: controller.signal,
-    })
+    fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`)
       .then((res) => res.json())
       .then((items: Library[]) => setResults(items))
-      .catch((error: unknown) => {
-        // Aborting is expected. Re-throw anything else.
-        if (error instanceof DOMException && error.name === 'AbortError') return
-        throw error
-      })
-
-    return () => controller.abort()
   }, [debouncedQuery])
 
      ===================================================================== */
